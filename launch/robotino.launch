@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- Launchs a single robot -->
+<launch>
+   <node name="odom" pkg="multi_robot_exploration" type="odometry.py" respawn="true" output="screen" />
+
+    <!-- Convert PointCloud (published by Hokuyo on CoppeliaSim) to PointCloud2 (used in SLAM)-->       
+   <node name="point_cloud_converter" pkg="point_cloud_converter" type="point_cloud_converter_node" respawn="true" output="screen">
+      <remap from="points_in" to="points1" />
+      <remap from="points2_out" to="points2" />
+   </node>
+</launch>

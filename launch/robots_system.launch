@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- Launchs the multi-robot system -->
+<launch>
+    <group ns="robotino0">
+        <param name="tf_prefix" value="robotino0_tf" />
+        <include file="$(find multi_robot_exploration)/launch/robotino.launch" />
+        <include file="$(find multi_robot_exploration)/launch/robotino_2d.launch" />
+    </group>
+    
+    <group ns="robotino1">
+        <param name="tf_prefix" value="robotino1_tf" />
+        <include file="$(find multi_robot_exploration)/launch/robotino.launch" />
+        <include file="$(find multi_robot_exploration)/launch/robotino_2d.launch" />
+    </group>
+
+    <group ns="robotino2">
+        <param name="tf_prefix" value="robotino2_tf" />
+        <include file="$(find multi_robot_exploration)/launch/robotino.launch" />
+        <include file="$(find multi_robot_exploration)/launch/robotino_2d.launch" />
+    </group>
+</launch>
