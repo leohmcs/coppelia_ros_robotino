@@ -15,14 +15,15 @@
 include "map_builder.lua"
 include "trajectory_builder.lua"
 
+local tf_prefix = "robotino2_tf/"
 options = {
   map_builder = MAP_BUILDER,
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
-  tracking_frame = "base_link",
-  published_frame = "base_link",
-  odom_frame = "odom",
-  provide_odom_frame = true,
+  tracking_frame = tf_prefix .. "base_link",
+  published_frame = tf_prefix .. "odom",
+  odom_frame = tf_prefix .. "odom",
+  provide_odom_frame = false,
   publish_frame_projected_to_2d = true,
   use_pose_extrapolator = true,
   use_odometry = true,
@@ -30,7 +31,7 @@ options = {
   use_landmarks = false,
   num_laser_scans = 0,
   num_multi_echo_laser_scans = 0,
-  num_subdivisions_per_laser_scan = 0,
+  num_subdivisions_per_laser_scan = 1,
   num_point_clouds = 1,
   lookup_transform_timeout_sec = 1.,
   submap_publish_period_sec = 0.3,
@@ -49,7 +50,7 @@ TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
 
 TRAJECTORY_BUILDER_2D.min_range = 0.3
 TRAJECTORY_BUILDER_2D.missing_data_ray_length = 2.
-TRAJECTORY_BUILDER_2D.use_imu_data = true
+TRAJECTORY_BUILDER_2D.use_imu_data = false
 TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true
 TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.linear_search_window = 0.1
 TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.translation_delta_cost_weight = 10.
