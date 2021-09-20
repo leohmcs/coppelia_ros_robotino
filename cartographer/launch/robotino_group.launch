@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+    <group ns="robotino0">
+        <include file="$(find cartographer_ros)/launch/robotino_2d.launch">
+            <arg name="configuration_basename" value="robotino0_2d.lua" />
+        </include>
+    </group>
+    
+    <group ns="robotino1">
+        <include file="$(find cartographer_ros)/launch/robotino_2d.launch">
+            <arg name="configuration_basename" value="robotino1_2d.lua" />
+        </include>
+    </group>
+
+    <group ns="robotino2">
+        <param name="tf_prefix" value="robotino2_tf" />
+        <include file="$(find cartographer_ros)/launch/robotino_2d.launch">
+            <arg name="configuration_basename" value="robotino2_2d.lua" />
+        </include>
+    </group>
+
+    <node name="rviz" pkg="rviz" type="rviz" required="true"
+    args="-d $(find cartographer_ros)/configuration_files/robotino_group.rviz" />
+</launch>
