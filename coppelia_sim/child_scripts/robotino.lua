@@ -1,70 +1,3 @@
-function publish_gt_odometry()
-    motor0Vel = sim.getJointTargetVelocity(motor0Handle, -1)
-    motor1Vel = sim.getJointTargetVelocity(motor1Handle, -1)
-    motor2Vel = sim.getJointTargetVelocity(motor2Handle, -1)
-    
-    wheelVelVec = {motor0Vel, motor1Vel, motor2Vel}
-    
-    robotVel = matrix.mul(wheelVelVec, Mdir)
-    sim.addLog(sim.verbosity_scriptinfos, robotVel)
-    
-    p = sim.getObjectPosition(robotHandle, -1)
-    o = sim.getObjectQuaternion(robotHandle, -1)
-    
-    odom = {
-        header= {
-            stamp= simROS.getTime(),
-            frame_id= 'odom'
-        },
-        child_frame_id= 'base_link',
-        pose= {
-            pose= {
-                position= {
-                    x=p[1],
-                    y=p[2],
-                    z=p[3]
-                },
-                orientation= {
-                    x=o[1],
-                    y=o[2],
-                    z=o[3],
-                    w=o[4]
-                }
-            }
-        },
-        twist= {
-            twist= {
-                linear= {
-                    x=robotVel[1],
-                    y=robotVel[2],
-                    z=0
-                },
-                angular= {
-                    x=0,
-                    y=0,
-                    z=robotVel[3]
-                }
-            }
-        }
-    }
-    simROS.publish(publisher_odom, odom)
-    
-    simROS.sendTransform({
-        header={
-           stamp = simROS.getTime(), 
-            frame_id = 'odom'}, 
-            child_frame_id = 'base_link', 
-            transform = {
-                translation = {x=p[1], y=p[2], z=0}, 
-                rotation = {x = quat_rot[1], y = quat_rot[2], z = quat_rot[3], w = quat_rot[4]}
-            }
-        }
-    )
-    
-    last_time = current_time
-end
-
-
 function publish_joint_state(jointHandle, jointName, publisher)
     jointPos = sim.getJointPosition(jointHandle)
     jointVel = sim.getJointTargetVelocity(jointHandle, -1)
@@ -92,7 +25,7 @@ function publish_gt_pose()
     pose_stamped = {
         header = {
             stamp= simROS.getTime(),
-            frame_id= 'odom'
+            frame_id= "/" .. robotPrefix .. '_tf/odom'
         },
         pose = {
             position = {x = p[1], y = p[2], z = p[3]},
@@ -143,6 +76,7 @@ function sysCall_init()
         sim.addLog(sim.verbosity_scriptinfos, "ROS interface was found.")
         
         -- Prepare GT pose
+        -- publisher_gt_relative_pose = simROS.advertise('/gt_relative_pose', 'geometry_msgs/Pose')
         publisher_gt_pose = simROS.advertise("/" .. robotPrefix .. '/gt_pose', 'geometry_msgs/PoseStamped')
         
         publisher_joint0_state = simROS.advertise("/" .. robotPrefix .. "/joint0_state", "sensor_msgs/JointState")
