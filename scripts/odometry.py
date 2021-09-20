@@ -10,6 +10,8 @@ import tf
 
 import numpy as np
 
+import time
+
 
 class Odom:
     def __init__(self):
@@ -32,6 +34,7 @@ class Odom:
                                 0, 0, 0, 0, 0, 0,
                                 0, 0, 0, 0, 0, 0]
 
+        self.tf_prefix = ""
         self.odom_broadcaster = tf.broadcaster.TransformBroadcaster()
 
         self.pose_stamped = PoseStamped()
@@ -59,9 +62,15 @@ class Odom:
         self.joint2_state = msg
 
     def get_velocity(self):
-        w0 = self.joint0_state.velocity[0]
-        w1 = self.joint1_state.velocity[0]
-        w2 = self.joint2_state.velocity[0]
+        w0, w1, w2 = 0., 0., 0.
+        try:
+            w0 = self.joint0_state.velocity[0]
+            w1 = self.joint1_state.velocity[0]
+            w2 = self.joint2_state.velocity[0]
+        except IndexError:
+            rospy.logwarn("Could not index joint state velocity. Probably no message was received yet.")
+            time.sleep(1)
+            
 
         w_vec = np.array([w0, w1, w2])
 
@@ -72,24 +81,23 @@ class Odom:
     def publish_odom(self):
         pose = self.pose_stamped.pose
         vel = self.get_velocity()
-
-        ## Cartographer is configured to provide odom frame ##
-        # pos = np.array([pose.position.x, pose.position.y, 0.])
-        # quat = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
-        # self.odom_broadcaster.sendTransform (
-        #     pos,
-        #     quat,
-        #     rospy.Time.now(),
-        #     "base_link",
-        #     "odom"
-        # )
+        
+        pos = np.array([pose.position.x, pose.position.y, 0.])
+        quat = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
+        self.odom_broadcaster.sendTransform (
+            pos,
+            quat,
+            rospy.Time.now(),
+            self.tf_prefix + "base_link",
+            self.tf_prefix + "odom"
+        )
 
         # fill message
         msg = Odometry()
         msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = 'odom'
+        msg.header.frame_id = self.tf_prefix + "odom"
 
-        msg.child_frame_id = 'base_link'
+        msg.child_frame_id = self.tf_prefix + "base_link"
 
         msg.pose.pose = pose
         msg.pose.covariance = self.pose_covariance
@@ -104,6 +112,8 @@ node = Odom()
 node_name = 'odom'
 rospy.init_node(node_name)
 rospy.loginfo(node_name + " inicializado com sucesso.")
+
+node.tf_prefix = rospy.get_param("tf_prefix") + "/"
 
 rate = rospy.Rate(10)
 while not rospy.is_shutdown():
