@@ -42,7 +42,7 @@ class Odom:
         self.joint1_state = JointState()
         self.joint2_state = JointState()
 
-        pose_stamped_sub = rospy.Subscriber('gt_relative_pose', PoseStamped, self.pose_stamped_callback)
+        pose_stamped_sub = rospy.Subscriber('gt_pose', PoseStamped, self.pose_stamped_callback)
         joint0_state_sub = rospy.Subscriber('joint0_state', JointState, self.joint0_state_callback)
         joint1_state_sub = rospy.Subscriber('joint1_state', JointState, self.joint1_state_callback)
         joint2_state_sub = rospy.Subscriber('joint2_state', JointState, self.joint2_state_callback)
@@ -83,15 +83,15 @@ class Odom:
         pose = self.pose_stamped.pose
         vel = self.get_velocity()
         
-        pos = np.array([pose.position.x, pose.position.y, 0.])
-        quat = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
-        self.odom_broadcaster.sendTransform (
-            pos,
-            quat,
-            stamp,
-            self.tf_prefix + "base_link",
-            self.tf_prefix + "odom"
-        )
+        # pos = np.array([pose.position.x, pose.position.y, 0.])
+        # quat = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
+        # self.odom_broadcaster.sendTransform (
+        #     pos,
+        #     quat,
+        #     stamp,
+        #     self.tf_prefix + "base_link",
+        #     self.tf_prefix + "odom"
+        # )
 
         # fill message
         msg = Odometry()
