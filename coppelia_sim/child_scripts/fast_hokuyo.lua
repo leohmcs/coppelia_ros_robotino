@@ -2,19 +2,16 @@ function sysCall_init()
     hokuyoHandle = sim.getObjectHandle(sim.handle_self)
     hokuyoName = sim.getObjectName(hokuyoHandle)
     nameIndex = string.sub(hokuyoName, -1)
-
     if simROS then
         sim.addLog(sim.verbosity_scriptinfos,"ROS interface was found.")
         
         local rosNamespace = 'robotino' .. nameIndex
         local hokuyoTopicName='/' .. rosNamespace .. '/points1'
+        
         tf_prefix = rosNamespace .. '_tf'
         
         -- Prepare the hokuyo publisher:
         hokuyoPub = simROS.advertise(hokuyoTopicName, 'sensor_msgs/PointCloud')
-        
-        -- Now we start the client application:
-        -- result = sim.launchExecutable('Robotino' .. nameIndex, hokuyoTopicName, 0)
     
     else
         sim.addLog(sim.verbosity_scripterrors,"ROS interface was not found. Cannot run.")
@@ -123,6 +120,9 @@ function sysCall_sensing()
                             z=p[3],
                         }
                         table.insert(measuredData,point)
+                        -- table.insert(measuredData,p[1])
+                        -- table.insert(measuredData,p[2])
+                        -- table.insert(measuredData,p[3])
                     end
                     if showLines then
                         p={v1,v2,v3}
@@ -145,6 +145,7 @@ function sysCall_sensing()
             channels={}
             }
             
+        -- print(msg)
         simROS.publish(hokuyoPub, msg)
     
     end
@@ -168,7 +169,7 @@ function sysCall_sensing()
     -- Also, if you send the data via string signals, if you you cannot read the data in each simulation
     -- step, then always append the data to an already existing signal data, e.g.
     --
-    -- If you are using RemoteAPI instead of ROS
+    -- 
     -- data=sim.packFloatTable(measuredData)
     -- existingData=sim.getStringSignal("measuredDataAtThisTime")
     -- if existingData then

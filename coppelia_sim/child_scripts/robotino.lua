@@ -37,6 +37,27 @@ function publish_gt_pose()
 end
 
 
+function publish_gt_relative_pose()
+    p = sim.getObjectPosition(robotHandle, -1)
+    o = sim.getObjectQuaternion(robotHandle, -1)
+    
+    initial_p = initial_pose["position"]
+    initial_o = initial_pose["orientation"]
+        
+    pose_stamped = {
+        header = {
+            stamp= simROS.getTime(),
+            frame_id= "/" .. robotPrefix .. '_tf/odom'
+        },
+        pose = {
+            position = {x = p[1] - initial_p[1], y = p[2] - initial_p[2], z = p[3] - initial_p[3]},
+            orientation = {x = o[1], y = o[2], z = o[3], w = o[4]}
+        }
+    }
+    
+    simROS.publish(publisher_gt_relative_pose, pose_stamped)
+end
+
 function velocity_callback(msg)
     dx = msg.linear.x
     dy = msg.linear.y
@@ -56,6 +77,10 @@ function move(dx, dy, dt)
 end
 
 
+function euler_to_quaternion(quat)
+    -- TODO
+end
+
 function sysCall_init()
     robotHandle = sim.getObjectHandle(sim.handle_self)
     robotName = sim.getObjectName(robotHandle)
@@ -64,7 +89,14 @@ function sysCall_init()
     motor0Handle = sim.getObjectHandle("wheel0_joint")
     motor1Handle = sim.getObjectHandle("wheel1_joint")
     motor2Handle = sim.getObjectHandle("wheel2_joint")
-
+    
+    local pos = sim.getObjectPosition(robotHandle, -1)
+    local ori = sim.getObjectOrientation(robotHandle, -1)
+    initial_pose = {
+        position = pos,
+        orientation = ori
+    }
+        
     -- Kinematic model
     L = 0.135   -- Meters
     r = 0.040   -- Meters
@@ -76,7 +108,7 @@ function sysCall_init()
         sim.addLog(sim.verbosity_scriptinfos, "ROS interface was found.")
         
         -- Prepare GT pose
-        -- publisher_gt_relative_pose = simROS.advertise('/gt_relative_pose', 'geometry_msgs/Pose')
+        publisher_gt_relative_pose = simROS.advertise("/" .. robotPrefix .. '/gt_relative_pose', 'geometry_msgs/PoseStamped')
         publisher_gt_pose = simROS.advertise("/" .. robotPrefix .. '/gt_pose', 'geometry_msgs/PoseStamped')
         
         publisher_joint0_state = simROS.advertise("/" .. robotPrefix .. "/joint0_state", "sensor_msgs/JointState")
@@ -84,6 +116,11 @@ function sysCall_init()
         publisher_joint2_state = simROS.advertise("/" .. robotPrefix .. "/joint2_state", "sensor_msgs/JointState")
         
         subscriber_velocity = simROS.subscribe("/" .. robotPrefix .. "/cmd_vel", "geometry_msgs/Twist", "velocity_callback")
+        
+        simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_x", initial_pose["position"][1])
+        simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_y", initial_pose["position"][2])
+        simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_z", 0)
+        simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_yaw", initial_pose["orientation"][3])
     else
         sim.addLog(sim.verbosity_scripterrors, "ROS interface was not found. Cannot run.")    
     end
@@ -92,6 +129,7 @@ end
 
 function sysCall_actuation()
     publish_gt_pose()
+    publish_gt_relative_pose()
     
     joints_handlers = {motor0Handle, motor1Handle, motor2Handle}
     joints_frames = {"wheel0_joint", "wheel1_joint", "wheel2_joint"}
