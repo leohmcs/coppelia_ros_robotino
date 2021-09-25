@@ -1,7 +1,14 @@
 <?xml version="1.0"?>
 <!-- Launchs a single robot -->
 <launch>
-   <node name="odom" pkg="multi_robot_exploration" type="odometry.py" respawn="true" output="screen" />
+   <node name="odom" pkg="coppelia_ros_robotino" type="odometry.py" respawn="true" output="screen" />
+
+   <arg name="model" default="$(find robotino_description)/urdf/robotino.urdf"/>
+   <arg name="gui" default="False" />
+   <param name="robot_description" textfile="$(arg model)" />
+   <param name="use_gui" value="$(arg gui)"/>
+   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
     <!-- Convert PointCloud (published by Hokuyo on CoppeliaSim) to PointCloud2 (used in SLAM)-->       
    <node name="point_cloud_converter" pkg="point_cloud_converter" type="point_cloud_converter_node" respawn="true" output="screen">
