@@ -42,7 +42,7 @@ class Odom:
         self.joint1_state = JointState()
         self.joint2_state = JointState()
 
-        pose_stamped_sub = rospy.Subscriber('gt_pose', PoseStamped, self.pose_stamped_callback)
+        pose_stamped_sub = rospy.Subscriber('gt_relative_pose', PoseStamped, self.pose_stamped_callback)
         joint0_state_sub = rospy.Subscriber('joint0_state', JointState, self.joint0_state_callback)
         joint1_state_sub = rospy.Subscriber('joint1_state', JointState, self.joint1_state_callback)
         joint2_state_sub = rospy.Subscriber('joint2_state', JointState, self.joint2_state_callback)
@@ -79,6 +79,7 @@ class Odom:
         return q_vel
 
     def publish_odom(self):
+        stamp = rospy.Time.now()
         pose = self.pose_stamped.pose
         vel = self.get_velocity()
         
@@ -87,14 +88,14 @@ class Odom:
         self.odom_broadcaster.sendTransform (
             pos,
             quat,
-            rospy.Time.now(),
+            stamp,
             self.tf_prefix + "base_link",
             self.tf_prefix + "odom"
         )
 
         # fill message
         msg = Odometry()
-        msg.header.stamp = rospy.Time.now()
+        msg.header.stamp = stamp
         msg.header.frame_id = self.tf_prefix + "odom"
 
         msg.child_frame_id = self.tf_prefix + "base_link"
