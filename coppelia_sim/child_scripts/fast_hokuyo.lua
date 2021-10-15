@@ -2,16 +2,22 @@ function sysCall_init()
     hokuyoHandle = sim.getObjectHandle(sim.handle_self)
     hokuyoName = sim.getObjectName(hokuyoHandle)
     nameIndex = string.sub(hokuyoName, -1)
+    
+    showLines = False
+    
     if simROS then
         sim.addLog(sim.verbosity_scriptinfos,"ROS interface was found.")
         
+        -- local sysTime=sim.getSystemTimeInMs(-1)
         local rosNamespace = 'robotino' .. nameIndex
         local hokuyoTopicName='/' .. rosNamespace .. '/points1'
-        
         tf_prefix = rosNamespace .. '_tf'
         
         -- Prepare the hokuyo publisher:
         hokuyoPub = simROS.advertise(hokuyoTopicName, 'sensor_msgs/PointCloud')
+        
+        -- Now we start the client application:
+        -- result = sim.launchExecutable('Robotino' .. nameIndex, hokuyoTopicName, 0)
     
     else
         sim.addLog(sim.verbosity_scripterrors,"ROS interface was not found. Cannot run.")
@@ -57,7 +63,7 @@ function sysCall_sensing()
     if notFirstHere then
         -- We skip the very first reading
         sim.addDrawingObjectItem(lines,nil)
-        showLines=sim.getScriptSimulationParameter(sim.handle_self,'showLaserSegments')
+        -- showLines=sim.getScriptSimulationParameter(sim.handle_self,'showLaserSegments')
         r,t1,u1=sim.readVisionSensor(visionSensor1Handle)
         r,t2,u2=sim.readVisionSensor(visionSensor2Handle)
     
@@ -88,6 +94,9 @@ function sysCall_sensing()
                             z=p[3],
                         }
                         table.insert(measuredData,point)
+                        -- table.insert(measuredData,p[1])
+                        -- table.insert(measuredData,p[2])
+                        -- table.insert(measuredData,p[3])
                     end
                     if showLines then
                         p={v1,v2,v3}
