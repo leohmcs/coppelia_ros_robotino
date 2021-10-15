@@ -51,6 +51,7 @@ class Odom:
 
     def pose_stamped_callback(self, msg):
         self.pose_stamped = msg
+        self.pose_stamped.pose.position.z = 0.0
 
     def joint0_state_callback(self, msg):
         self.joint0_state = msg
@@ -83,15 +84,15 @@ class Odom:
         pose = self.pose_stamped.pose
         vel = self.get_velocity()
         
-        # pos = np.array([pose.position.x, pose.position.y, 0.])
-        # quat = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
-        # self.odom_broadcaster.sendTransform (
-        #     pos,
-        #     quat,
-        #     stamp,
-        #     self.tf_prefix + "base_link",
-        #     self.tf_prefix + "odom"
-        # )
+        pos = np.array([pose.position.x, pose.position.y, pose.position.z])
+        quat = np.array([pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w])
+        self.odom_broadcaster.sendTransform (
+            pos,
+            quat,
+            stamp,
+            self.tf_prefix + "base_link",
+            self.tf_prefix + "odom"
+        )
 
         # fill message
         msg = Odometry()
