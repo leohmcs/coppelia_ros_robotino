@@ -82,6 +82,8 @@ function euler_to_quaternion(quat)
 end
 
 function sysCall_init()
+    require 'matrix'
+    
     robotHandle = sim.getObjectHandle(sim.handle_self)
     robotName = sim.getObjectName(robotHandle)
     robotPrefix = robotName:gsub("#","")  -- Remove #
@@ -96,12 +98,14 @@ function sysCall_init()
         position = pos,
         orientation = ori
     }
+    
+    Rz = Matrix(3, 3, {math.cos(ori[3]), math.sin(ori[3]), 0.0, math.cos(ori[3]), -math.sin(ori[3]), 0.0, 0.0, 0.0, 1.0})
         
     -- Kinematic model
     L = 0.135   -- Meters
     r = 0.040   -- Meters
-    require 'matrix'
-    Minv = Matrix(3, 3, {-math.sqrt(3)/2, 0.5, L, 0, -1, L, math.sqrt(3)/2, 0.5, L})
+    
+    Minv = Matrix(3, 3, {-math.sqrt(3)/2, 0.5, L, 0.0, -1.0, L, math.sqrt(3)/2, 0.5, L})
     Minv = Minv * (1/r)
     
     if simROS then
