@@ -2,6 +2,7 @@
 <!-- Launchs a single robot -->
 <launch>
    <node name="odom" pkg="coppelia_ros_robotino" type="odometry.py" respawn="true" output="screen" />
+   <node name="frontier_detector" pkg="coppelia_ros_robotino" type="frontier_detector.py" respawn="true" output="screen" />
 
    <arg name="model" default="$(find robotino_description)/urdf/robotino.urdf"/>
    <arg name="gui" default="False" />
