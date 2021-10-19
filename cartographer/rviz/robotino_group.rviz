@@ -5,12 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Tree1
-        - /Robotino01
-        - /Robotino01/Map1
-        - /Robotino11
-        - /Robotino11/Map1
-        - /Robotino21
-        - /Robotino21/Map1
       Splitter Ratio: 0.5895117521286011
     Tree Height: 349
   - Class: rviz/Selection
@@ -31,7 +25,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Fast Hokuyo
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -68,8 +62,6 @@ Visualization Manager:
           Value: true
         robotino0_tf/command_bridge_link:
           Value: false
-        robotino0_tf/map:
-          Value: true
         robotino0_tf/odom:
           Value: true
         robotino0_tf/wheel0_link:
@@ -84,8 +76,6 @@ Visualization Manager:
           Value: true
         robotino1_tf/command_bridge_link:
           Value: false
-        robotino1_tf/map:
-          Value: true
         robotino1_tf/odom:
           Value: true
         robotino1_tf/wheel0_link:
@@ -100,8 +90,6 @@ Visualization Manager:
           Value: true
         robotino2_tf/command_bridge_link:
           Value: false
-        robotino2_tf/map:
-          Value: true
         robotino2_tf/odom:
           Value: true
         robotino2_tf/wheel0_link:
@@ -110,8 +98,6 @@ Visualization Manager:
           Value: false
         robotino2_tf/wheel2_link:
           Value: false
-        world:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -119,46 +105,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          robotino0_tf/map:
-            robotino0_tf/odom:
-              robotino0_tf/base_link:
-                robotino0_tf/anglebracketusb_link:
-                  {}
-                robotino0_tf/command_bridge_link:
-                  {}
-                robotino0_tf/wheel0_link:
-                  {}
-                robotino0_tf/wheel1_link:
-                  {}
-                robotino0_tf/wheel2_link:
-                  {}
-          robotino1_tf/map:
-            robotino1_tf/odom:
-              robotino1_tf/base_link:
-                robotino1_tf/anglebracketusb_link:
-                  {}
-                robotino1_tf/command_bridge_link:
-                  {}
-                robotino1_tf/wheel0_link:
-                  {}
-                robotino1_tf/wheel1_link:
-                  {}
-                robotino1_tf/wheel2_link:
-                  {}
-          robotino2_tf/map:
-            robotino2_tf/odom:
-              robotino2_tf/base_link:
-                robotino2_tf/anglebracketusb_link:
-                  {}
-                robotino2_tf/command_bridge_link:
-                  {}
-                robotino2_tf/wheel0_link:
-                  {}
-                robotino2_tf/wheel1_link:
-                  {}
-                robotino2_tf/wheel2_link:
-                  {}
+        {}
       Update Interval: 0
       Value: true
     - Class: rviz/Group
@@ -177,6 +124,7 @@ Visualization Manager:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             base_link:
               Alpha: 1
               Show Axes: false
@@ -191,14 +139,17 @@ Visualization Manager:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             wheel1_link:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             wheel2_link:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
           Name: RobotModel
           Robot Description: robotino0/robot_description
           TF Prefix: robotino0_tf
@@ -223,7 +174,7 @@ Visualization Manager:
               Value: true
             Value: true
           Enabled: true
-          Keep: 100
+          Keep: 1
           Name: Odometry
           Position Tolerance: 0.10000000149011612
           Queue Size: 10
@@ -249,6 +200,17 @@ Visualization Manager:
           Topic: /robotino0/map
           Unreliable: false
           Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Class: rviz/PointStamped
+          Color: 204; 41; 204
+          Enabled: true
+          History Length: 1
+          Name: Goal
+          Queue Size: 10
+          Radius: 0.20000000298023224
+          Topic: /robotino0/map/frontiers/nearest
+          Unreliable: false
           Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
@@ -296,6 +258,7 @@ Visualization Manager:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             base_link:
               Alpha: 1
               Show Axes: false
@@ -310,14 +273,17 @@ Visualization Manager:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             wheel1_link:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             wheel2_link:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
           Name: RobotModel
           Robot Description: robotino1/robot_description
           TF Prefix: robotino1_tf
@@ -342,7 +308,7 @@ Visualization Manager:
               Value: true
             Value: true
           Enabled: true
-          Keep: 100
+          Keep: 1
           Name: Odometry
           Position Tolerance: 0.10000000149011612
           Queue Size: 10
@@ -368,6 +334,17 @@ Visualization Manager:
           Topic: /robotino1/map
           Unreliable: false
           Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Class: rviz/PointStamped
+          Color: 204; 41; 204
+          Enabled: true
+          History Length: 1
+          Name: Goal
+          Queue Size: 10
+          Radius: 0.20000000298023224
+          Topic: /robotino1/map/frontiers/nearest
+          Unreliable: false
           Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
@@ -415,6 +392,7 @@ Visualization Manager:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             base_link:
               Alpha: 1
               Show Axes: false
@@ -429,14 +407,17 @@ Visualization Manager:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             wheel1_link:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
             wheel2_link:
               Alpha: 1
               Show Axes: false
               Show Trail: false
+              Value: true
           Name: RobotModel
           Robot Description: robotino2/robot_description
           TF Prefix: robotino2_tf
@@ -461,7 +442,7 @@ Visualization Manager:
               Value: true
             Value: true
           Enabled: true
-          Keep: 100
+          Keep: 1
           Name: Odometry
           Position Tolerance: 0.10000000149011612
           Queue Size: 10
@@ -487,6 +468,17 @@ Visualization Manager:
           Topic: /robotino2/map
           Unreliable: false
           Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Class: rviz/PointStamped
+          Color: 204; 41; 204
+          Enabled: true
+          History Length: 1
+          Name: Goal
+          Queue Size: 10
+          Radius: 0.20000000298023224
+          Topic: /robotino2/map/frontiers/nearest
+          Unreliable: false
           Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
@@ -555,10 +547,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 19.79814338684082
+      Scale: 41.422698974609375
       Target Frame: <Fixed Frame>
-      X: -8.06324291229248
-      Y: 3.8763904571533203
+      X: 0.038582466542720795
+      Y: -0.5825797915458679
     Saved: ~
 Window Geometry:
   Displays:
@@ -576,5 +568,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1366
-  X: 0
-  Y: 27
+  X: 2447
+  Y: 115

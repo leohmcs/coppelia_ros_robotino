@@ -69,7 +69,7 @@ class Odom:
             w1 = self.joint1_state.velocity[0]
             w2 = self.joint2_state.velocity[0]
         except IndexError:
-            rospy.logwarn("Could not index joint state velocity. Probably no message was received yet.")
+            rospy.logerr("Could not index joint state velocity. Probably no message was received yet.")
             time.sleep(1)
             
 
