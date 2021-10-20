@@ -5,6 +5,7 @@ import rospy
 from geometry_msgs.msg import Point, PointStamped
 from nav_msgs.msg import OccupancyGrid, Odometry
 from coppelia_ros_robotino.msg import PointArray
+import tf_conversions
 
 import numpy as np
 import cv2
@@ -17,10 +18,12 @@ class FrontierDetector:
         self.map = None
         self.map_origin = None
         self.map_resolution = None
+        self.map_img = None
 
         self.frontiers = None
 
         self.robot_position = None
+        self.robot_ori = None
 
         map_sub = rospy.Subscriber('map', OccupancyGrid, callback=self.map_callback)
         odom_sub = rospy.Subscriber('odom', Odometry, callback=self.odom_callback)
@@ -38,6 +41,9 @@ class FrontierDetector:
     def odom_callback(self, msg):
         position = msg.pose.pose.position
         self.robot_position = np.array([position.x, position.y])
+        quat = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+        euler = tf_conversions.transformations.euler_from_quaternion(quat)
+        self.robot_ori = euler[2]
     
     def array2point_msg(self, array, is_3d=False):
         try:
@@ -69,26 +75,35 @@ class FrontierDetector:
 
             return msg
 
-    def occmap2img(self):
+    def update_map_img(self):
         img = np.zeros(self.map.shape)
         img = (1 - (self.map/100)) * 255
         unknown = np.where(self.map == -1)
         img[unknown] = 155
-        cv2.imshow('i', img.astype('uint8'))
-        cv2.waitKey(10)
-        return img.astype('uint8')
+        self.map_img = img.astype('uint8')
 
     def cell2position(self, cell):
+        print(cell.shape)
         map_resolution = self.map_resolution
         pos = []
         try:
             for c in cell:
+                c = c[::-1]
                 pos.append(c * map_resolution)
         
         except TypeError:
+            cell = cell[::-1]
             pos = cell * map_resolution
 
+        print(np.array(pos).shape)
         return np.array(pos)
+
+    def rz(self, point):
+        th = self.robot_ori
+        mat = np.array([[np.cos(th), np.sin(th), 0], [-np.sin(th), np.cos(th), 0], [0, 0, 1]])
+        point = np.append(point, 0)
+        result = np.dot(mat, point)
+        return result
 
     def get_neighbours(self, ind, map_shape, n=1):
         rr, cc = ind
@@ -112,17 +127,18 @@ class FrontierDetector:
         return neighbours
 
     def detect_frontiers(self):
-        m_img = self.occmap2img()
-        candidates = self.get_frontier_candidates(m_img)
-        frontiers_points = self.remove_obstacles_edges(candidates, occ_thresh=55)
+        self.update_map_img()
+        candidates = self.get_frontier_candidates(self.map_img)
+        self.frontiers = self.remove_obstacles_edges(candidates, occ_thresh=55)
+        # frontiers_points = self.remove_obstacles_edges(candidates, occ_thresh=55)
         # self.frontiers = frontiers_points
-        self.frontiers = self.process_result(frontiers_points)
+        # self.frontiers = self.process_result(frontiers_points)
         # frontiers_lines = self.get_frontiers_lines(frontiers_points, threshold=40)
         # self.frontiers = self.draw_frontiers_lines(frontiers_lines)
 
     def process_result(self, frontier_points):
         img = (frontier_points * 255).astype('uint8')
-        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)))
+        img = cv2.erode(img, np.ones((3, 3)))
         img = cv2.dilate(img, np.ones((3, 3)))
         return img / 255
 
@@ -150,7 +166,6 @@ class FrontierDetector:
             cand_region = self.map[neighbours[0], neighbours[1]]
             if np.all(cand_region < occ_thresh) and np.any(cand_region == unknown_flag):
                     frontier_points[it.multi_index] = 1
-                    print(m[it.multi_index])
         
         return frontier_points
 
@@ -177,19 +192,16 @@ class FrontierDetector:
 
     def nearest_frontier(self):
         robot_position = self.robot_position
-        if robot_position is None:
-            rospy.logerr('Robot position is unknown. Cannot calculate nearest frontier.')
-            return None
-
-        frontiers_ind = np.transpose(np.where(self.frontiers != 0))
+        frontiers_ind = np.transpose(np.where(self.frontiers == 1))
         frontiers_pos = self.cell2position(frontiers_ind)
         try:
             frontiers_pos = frontiers_pos + self.map_origin
         except ValueError:
             rospy.loginfo('No frontier detected. Therefore, could not obtain nearest frontier.')
             return None
-        nearest = np.argmin(np.linalg.norm(frontiers_pos, axis=1))
-        return frontiers_pos[nearest] 
+
+        nearest = np.argmin(np.linalg.norm(frontiers_pos - robot_position, axis=1))
+        return self.rz(frontiers_pos[nearest]), frontiers_ind[nearest] 
     
     # TODO
     def biggest_frontier(self):
@@ -206,8 +218,12 @@ def parse_args():
 # args = parse_args()
 fig = plt.figure(figsize=(10, 5))
 fig.suptitle(rospy.get_namespace().replace('/', ''))
-frontiers_axes = fig.add_subplot(111)
-# state_axes = fig.add_subplot(122)
+map_axes = fig.add_subplot(121)
+map_axes.set_title('Map')
+map_axes.axis('off')
+frontiers_axes = fig.add_subplot(122)
+frontiers_axes.set_title('Frontiers')
+frontiers_axes.axis('off')
 
 node_name = "frontier_detector"
 rospy.init_node(node_name)
@@ -232,22 +248,29 @@ while not rospy.is_shutdown():
     # frontiers_msg = detector.array2point_msg(frontiers)
     # detector.publish_frontiers(PointArray(frontiers_msg))
 
-    nearest = detector.nearest_frontier()
+    nearest, ind = detector.nearest_frontier()
     if nearest is None:
         continue
 
     msg = PointStamped()
     msg.header.stamp = rospy.Time.now()
-    msg.header.frame_id = rospy.get_param("tf_prefix") + "/base_link"
+    msg.header.frame_id = rospy.get_param("tf_prefix") + "/odom"
     msg.point.x = nearest[0]
     msg.point.y = nearest[1]
-    # msg.point.x = detector.map_origin[0]
-    # msg.point.y = detector.map_origin[1]
     detector.nearest_frontier_pub.publish(msg)
+    rospy.loginfo('{} updated nearest frontier.'.format(rospy.get_namespace()))
+
+    map_axes.imshow(detector.map_img, cmap='gray', origin='lower')
 
     frontiers_img = (frontiers * 255).astype('uint8')
+    
+    ind = detector.get_neighbours(ind, frontiers.shape, n=3)
+    try:
+        frontiers_img[ind[0], ind[1]] = 150
+    except:
+        pass
+    
     frontiers_axes.imshow(frontiers_img, cmap='gray', origin='lower')
-    frontiers_axes.set_title('{} frontiers'.format(rospy.get_namespace().replace('/', ''), detector.num_frontiers))
 
     plt.draw()
     plt.pause(0.001)
