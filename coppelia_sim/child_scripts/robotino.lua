@@ -69,7 +69,7 @@ end
 
 function move(dx, dy, dt)
     q = Vector3{dx, dy, dt}
-    v = Minv * q
+    v = Minv * rotate_yaw(q)
     
     sim.setJointTargetVelocity(motor0Handle, v[1])
     sim.setJointTargetVelocity(motor1Handle, v[2])
@@ -79,6 +79,12 @@ end
 
 function euler_to_quaternion(quat)
     -- TODO
+end
+
+function rotate_yaw(vec)
+    local ori = sim.getObjectOrientation(robotHandle, -1)
+    local rot_mat = Matrix(3, 3, {math.cos(ori[3]), math.sin(ori[3]), 0, -math.sin(ori[3]), math.cos(ori[3]), 0, 0, 0, 1})
+    return rot_mat * vec
 end
 
 function sysCall_init()
@@ -99,8 +105,11 @@ function sysCall_init()
         orientation = ori
     }
     
-    Rz = Matrix(3, 3, {math.cos(ori[3]), math.sin(ori[3]), 0.0, math.cos(ori[3]), -math.sin(ori[3]), 0.0, 0.0, 0.0, 1.0})
-        
+    simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_x", initial_pose["position"][1])
+    simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_y", initial_pose["position"][2])
+    simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_z", 0)
+    simROS.setParamDouble("/" .. robotPrefix .. "/map_merge/init_pose_yaw", initial_pose["orientation"][3])
+            
     -- Kinematic model
     L = 0.135   -- Meters
     r = 0.040   -- Meters
