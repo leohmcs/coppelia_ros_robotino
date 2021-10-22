@@ -42,7 +42,7 @@ class Odom:
         self.joint1_state = JointState()
         self.joint2_state = JointState()
 
-        pose_stamped_sub = rospy.Subscriber('gt_relative_pose', PoseStamped, self.pose_stamped_callback)
+        pose_stamped_sub = rospy.Subscriber('gt_pose', PoseStamped, self.pose_stamped_callback)
         joint0_state_sub = rospy.Subscriber('joint0_state', JointState, self.joint0_state_callback)
         joint1_state_sub = rospy.Subscriber('joint1_state', JointState, self.joint1_state_callback)
         joint2_state_sub = rospy.Subscriber('joint2_state', JointState, self.joint2_state_callback)
@@ -117,7 +117,7 @@ rospy.loginfo(node_name + " inicializado com sucesso.")
 
 node.tf_prefix = rospy.get_param("tf_prefix") + "/"
 
-rate = rospy.Rate(10)
+rate = rospy.Rate(100)
 while not rospy.is_shutdown():
      node.publish_odom()
      rate.sleep()
