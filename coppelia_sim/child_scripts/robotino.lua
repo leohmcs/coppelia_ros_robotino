@@ -69,6 +69,7 @@ end
 
 function move(dx, dy, dt)
     q = Vector3{dx, dy, dt}
+    v = rotate_yaw(q)
     v = Minv * q
     
     sim.setJointTargetVelocity(motor0Handle, v[1])
@@ -79,6 +80,14 @@ end
 
 function euler_to_quaternion(quat)
     -- TODO
+end
+
+function rotate_yaw(vec)
+    local ori = sim.getObjectOrientation(robotHandle, -1)
+    th = ori[3]
+    rot_mat = Matrix(3, 3, {math.cos(th), -math.sin(th), 0, math.cos(th), math.sin(th), 0, 0, 0, 1})
+    vec = rot_mat * vec
+    return vec
 end
 
 function sysCall_init()
