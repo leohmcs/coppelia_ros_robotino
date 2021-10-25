@@ -70,7 +70,7 @@ end
 function move(dx, dy, dt)
     q = Vector3{dx, dy, dt}
     v = Minv * rotate_yaw(q)
-    
+
     sim.setJointTargetVelocity(motor0Handle, v[1])
     sim.setJointTargetVelocity(motor1Handle, v[2])
     sim.setJointTargetVelocity(motor2Handle, v[3])
@@ -85,6 +85,7 @@ function rotate_yaw(vec)
     local ori = sim.getObjectOrientation(robotHandle, -1)
     local rot_mat = Matrix(3, 3, {math.cos(ori[3]), math.sin(ori[3]), 0, -math.sin(ori[3]), math.cos(ori[3]), 0, 0, 0, 1})
     return rot_mat * vec
+
 end
 
 function sysCall_init()
