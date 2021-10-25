@@ -45,11 +45,14 @@ class FrontierDetector:
         self.map_origin = np.array([msg.info.origin.position.x, msg.info.origin.position.y])
         self.map_resolution = msg.info.resolution
 
-    def map_img(self):
+    def map_img(self, preprocess=True):
         img = np.zeros(self.map.shape, dtype=np.uint8)
         img = (1 - (self.map/100)) * 255
         unknown = np.where(self.map == -1)
         img[unknown] = 155
+        if preprocess:
+            img = self.preprocess_map_img(img)
+            img = 255 - img
         return img
 
     def binary_map_img(self, occ_thresh=50, unknown_flag=-1):
@@ -243,25 +246,25 @@ while not rospy.is_shutdown():
 
     msg = PointStamped()
     msg.header.stamp = rospy.Time.now()
-    msg.header.frame_id = rospy.get_param("tf_prefix") + "/odom"
+    msg.header.frame_id = rospy.get_param("tf_prefix") + "/map"
     msg.point.x = nearest[0]
     msg.point.y = nearest[1]
     detector.nearest_frontier_pub.publish(msg)
 
-    map_axes.imshow(detector.map_img(), cmap='gray', origin='lower')
+    # map_axes.imshow(detector.map_img(), cmap='gray', origin='lower')
 
-    frontiers_img = (frontiers * 255).astype('uint8')
+    # frontiers_img = (frontiers * 255).astype('uint8')
     
-    ind = detector.get_neighbours(ind, frontiers.shape, n=3)
-    try:
-        frontiers_img[ind[0], ind[1]] = 150
-    except:
-        pass
+    # ind = detector.get_neighbours(ind, frontiers.shape, n=3)
+    # try:
+    #     frontiers_img[ind[0], ind[1]] = 150
+    # except:
+    #     pass
     
-    frontiers_axes.imshow(frontiers_img, cmap='gray', origin='lower')
+    # frontiers_axes.imshow(frontiers_img, cmap='gray', origin='lower')
 
-    plt.draw()
-    plt.pause(0.001)
-    plt.cla()
+    # plt.draw()
+    # plt.pause(0.001)
+    # plt.cla()
 
     rate.sleep()
