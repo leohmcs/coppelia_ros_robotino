@@ -3,8 +3,6 @@ function sysCall_init()
     hokuyoName = sim.getObjectName(hokuyoHandle)
     nameIndex = string.sub(hokuyoName, -1)
     
-    showLines = true
-    
     if simROS then
         sim.addLog(sim.verbosity_scriptinfos, "ROS interface was found.")
         
@@ -54,27 +52,21 @@ function sysCall_cleanup()
     sim.removeDrawingObject(lines)
 end 
 
-function sysCall_sensing() 
+function sysCall_sensing()
     measuredData={}
     
     if notFirstHere then
         -- We skip the very first reading
         sim.addDrawingObjectItem(lines, nil)
+        showLines = false
         -- showLines=sim.getScriptSimulationParameter(sim.handle_self, 'showLaserSegments')
         r, t1, u1 = sim.readVisionSensor(visionSensor1Handle)
         r, t2, u2 = sim.readVisionSensor(visionSensor2Handle)
-    
-        m1 = sim.getObjectMatrix(visionSensor1Handle, -1)
-        m01 = simGetInvertedMatrix(sim.getObjectMatrix(sensorRef, -1))
-        m01 = sim.multiplyMatrices(m01, m1)
-        m2 = sim.getObjectMatrix(visionSensor2Handle, -1)
-        m02 = simGetInvertedMatrix(sim.getObjectMatrix(sensorRef, -1))
-        m02 = sim.multiplyMatrices(m02, m2)
+
+        m1 = sim.getObjectMatrix(visionSensor1Handle, sensorRef)
+        m2 = sim.getObjectMatrix(visionSensor2Handle, sensorRef)
         
         if u1 then
-            p = {0, 0, 0}
-            p = sim.multiplyVector(m1, p)
-            t = {p[1], p[2], p[3], 0, 0, 0}
             for j = 0, u1[2] - 1, 1 do
                 for i = 0, u1[1] - 1, 1 do
                     w = 2 + 4 * (j * u1[1] + i)
@@ -84,14 +76,15 @@ function sysCall_sensing()
                     v4 = u1[w + 4]
                     
                     p = {v1, v2, v3}
-                    p = sim.multiplyVector(m01, p)
+                    p = sim.multiplyVector(m1, p)
                     local point = {
                         x = p[1],
                         y = p[2],
                         z = p[3],
                     }
+                    
                     table.insert(measuredData, point)
-                        
+                    
                     if showLines then
                         p = {v1,v2,v3}
                         p = sim.multiplyVector(m1, p)
@@ -104,9 +97,6 @@ function sysCall_sensing()
             end
         end
         if u2 then
-            p = {0, 0, 0}
-            p = sim.multiplyVector(m2, p)
-            t = {p[1], p[2], p[3], 0, 0, 0}
             for j = 0,u2[2] - 1, 1 do
                 for i = 0, u2[1] - 1, 1 do
                     w = 2 + 4 * (j * u2[1] + i)
@@ -114,9 +104,9 @@ function sysCall_sensing()
                     v2 = u2[w + 2]
                     v3 = u2[w + 3]
                     v4 = u2[w + 4]
-
+                    
                     p = {v1, v2, v3}
-                    p = sim.multiplyVector(m02, p)
+                    p = sim.multiplyVector(m2, p)
                     local point = {
                         x = p[1],
                         y = p[2],
