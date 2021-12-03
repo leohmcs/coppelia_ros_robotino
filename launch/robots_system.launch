@@ -1,21 +1,80 @@
 <?xml version="1.0"?>
 <!-- Launchs the multi-robot system -->
+
 <launch>
     <group ns="robotino0">
         <param name="tf_prefix" value="robotino0_tf" />
         <include file="$(find coppelia_ros_robotino)/launch/robotino.launch" />
+        <!-- <include file="$(find coppelia_ros_robotino)/launch/slam.launch">
+            <arg name="tf_namespace" value="robotino0_tf/" />
+        </include> -->
+
+        <node name="odom_to_map_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 robotino0_tf/map robotino0_tf/odom" />
+
+        <node name="map_to_world_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 world robotino0_tf/map" />
     </group>
     
     <group ns="robotino1">
         <param name="tf_prefix" value="robotino1_tf" />
         <include file="$(find coppelia_ros_robotino)/launch/robotino.launch" />
+        <!-- <include file="$(find coppelia_ros_robotino)/launch/slam.launch">
+            <arg name="tf_namespace" value="robotino0_tf/" />
+        </include> -->
+
+        <node name="odom_to_map_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 robotino1_tf/map robotino1_tf/odom" />
+
+        <node name="map_to_world_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 world robotino1_tf/map" />
     </group>
 
     <group ns="robotino2">
         <param name="tf_prefix" value="robotino2_tf" />
         <include file="$(find coppelia_ros_robotino)/launch/robotino.launch" />
+        <!-- <include file="$(find coppelia_ros_robotino)/launch/slam.launch">
+            <arg name="tf_namespace" value="robotino2_tf/" />
+        </include> -->
+
+        <node name="odom_to_map_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 robotino2_tf/map robotino2_tf/odom" />
+
+        <node name="map_to_world_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 world robotino2_tf/map" />
     </group>
 
-    <node name="rviz" pkg="rviz" type="rviz" required="true"
-    args="-d $(find coppelia_ros_robotino)/cartographer/rviz/robotino_group.rviz" />
+    <group ns="robotino3">
+        <param name="tf_prefix" value="robotino3_tf" />
+        <include file="$(find coppelia_ros_robotino)/launch/robotino.launch" />
+        <!-- <include file="$(find coppelia_ros_robotino)/launch/slam.launch">
+            <arg name="tf_namespace" value="robotino3_tf/" />
+        </include> -->
+
+        <node name="odom_to_map_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 robotino3_tf/map robotino3_tf/odom" />
+
+        <node name="map_to_world_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 world robotino3_tf/map" />
+    </group>
+
+    <group ns="robotino4">
+        <param name="tf_prefix" value="robotino4_tf" />
+        <include file="$(find coppelia_ros_robotino)/launch/robotino.launch" />
+        <!-- <include file="$(find coppelia_ros_robotino)/launch/slam.launch">
+            <arg name="tf_namespace" value="robotino4_tf/" />
+        </include> -->
+
+        <node name="odom_to_map_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 robotino4_tf/map robotino4_tf/odom" />
+
+        <node name="map_to_world_tf" pkg="tf2_ros" type="static_transform_publisher" 
+            args="0 0 0 0 0 0 world robotino4_tf/map" />
+    </group>
+
+    <!-- <node name="map_merge" pkg="multirobot_map_merge" type="map_merge" /> -->
+
+    <!-- <node name="rviz" pkg="rviz" type="rviz" required="false"
+    args="-d $(find coppelia_ros_robotino)/rviz/robotino_group.rviz" /> -->
+
 </launch>

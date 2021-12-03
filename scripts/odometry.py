@@ -111,9 +111,7 @@ class Odom:
 
 
 node = Odom()
-node_name = 'odom'
-rospy.init_node(node_name)
-rospy.loginfo(node_name + " inicializado com sucesso.")
+rospy.init_node('odom_node')
 
 node.tf_prefix = rospy.get_param("tf_prefix") + "/"
 

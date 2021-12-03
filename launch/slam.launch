@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- Launchs the SLAM system -->
+
+<launch>
+    <arg name="tf_namespace" default="" />  <!-- notice that the namespace must include a slash (/) in the end -->
+    <node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" output="screen">
+        <param name="map_frame" value="$(arg tf_namespace)map" />
+        <param name="odom_frame" value="$(arg tf_namespace)odom" />
+        <param name="base_frame" value="$(arg tf_namespace)base_link" />
+
+        <param name="xmin" value="-20.0" />
+        <param name="xmax" value="20.0" />
+        <param name="ymin" value="-20.0" />
+        <param name="ymax" value="20.0" />
+
+        <param name="maxUrange" value="4.0"/>
+        <param name="maxRange" value="6.0"/>
+    </node>
+</launch>

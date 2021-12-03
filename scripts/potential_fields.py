@@ -127,7 +127,7 @@ class PotentialFields:
             return np.inf
         return np.arccos(dot / (norm_a * norm_b))
 
-    def go(self, goal_err=0.7):
+    def move(self):
         '''
         Move to goal using potential fields
         Input 
@@ -135,27 +135,15 @@ class PotentialFields:
         '''
         pose = self.pose
         goal = self.goal
+        v = self.linear_velocity(pose[:2], goal)  # [dx, dy]
+        # w = self.angular_velocity(pose[:2], goal) # [dth]
+        w = 0
+        q = np.append(v, w)
+        self.publish_velocity(q)
 
-        if pose is None:
-            rospy.logerr('{}\'s pose is unknown. Cannot move.'.format(self.NAMESPACE))
-            rospy.sleep(1)
-            return
-
-        if goal is None:
-            rospy.loginfo('{} is waiting for goal'.format(self.NAMESPACE))
-            rospy.sleep(1)
-            return
-
-        dist_to_goal = np.linalg.norm(pose[:2] - goal)
-        while dist_to_goal > goal_err:
-            v = self.linear_velocity(pose[:2], goal)  # [dx, dy]
-            # w = self.angular_velocity(pose[:2], goal) # [dth]
-            w = 0
-            q = np.append(v, w)
-            self.publish_velocity(q)
-
-            # update distance to goal
-            dist_to_goal = np.linalg.norm(self.pose[:2] - goal)
+    def stop(self):
+        q = [0.0, 0.0, 0.0]
+        self.publish_velocity(q)
 
     def linear_velocity(self, robot_pos, goal):
         return self.resultant_force(robot_pos, goal)
@@ -176,17 +164,17 @@ class PotentialFields:
     def resultant_force(self, robot_pos, goal):
         att = self.att_force(robot_pos, goal)
         rep = self.rep_force(robot_pos, self.obs_pos, min_dist=self.MAX_SENSOR_RANGE)
-        res = att + rep
-        # res += self.noise_force(att, rep)     more tests needed
+        # noise = self.noise_force(att, rep)     # more tests needed
+        res = att + rep # + noise
 
         print('{} att:{} rep: {}'.format(rospy.get_namespace(), np.linalg.norm(att), np.linalg.norm(rep)))
         # self.animate(att, rep, res)
         return res
 
-    def att_force(self, robot_pos, goal, katt=.2):        
+    def att_force(self, robot_pos, goal, katt=.5):        
         return katt * (goal - robot_pos)
 
-    def rep_force(self, robot_pos, obs_pos, krep=7, min_dist=3):
+    def rep_force(self, robot_pos, obs_pos, krep=2, min_dist=1):
         forces = np.array([0.0, 0.0])
 
         for p in obs_pos:
@@ -216,7 +204,7 @@ class PotentialFields:
         rad_bound = np.deg2rad(deg_bound)
         if -rad_bound < np.abs(self.ang(att, rep)) - np.pi < rad_bound:
             prev_lin_vel = self.curr_vel[:2]
-            return self.max_linear_speed * (prev_lin_vel) / np.linalg.norm(prev_lin_vel)
+            return np.array(self.max_linear_speed * (prev_lin_vel) / np.linalg.norm(prev_lin_vel))
 
     def animate(self, att_force, rep_force, res_force):
         plt.cla()
@@ -245,10 +233,25 @@ class PotentialFields:
 rospy.init_node('potential_fields')
 
 ns = rospy.get_namespace().replace('/', '')
-connection_radius = rospy.get_param('connection_radius', default=4)
-node = PotentialFields(ns, connection_radius)
+connection_radius = rospy.get_param('connection_radius', default=10)
+pf_node = PotentialFields(ns, connection_radius)
 
 rate = rospy.Rate(1)
 while not rospy.is_shutdown():
-    node.go()
-    rate.sleep()
+    if pf_node.pose is None:
+        rospy.logerr('{}\'s pose is unknown. Cannot move.'.format(pf_node.NAMESPACE))
+        rospy.sleep(1)
+        continue
+
+    if pf_node.goal is None:
+        rospy.loginfo('{} is waiting for goal'.format(pf_node.NAMESPACE))
+        rospy.sleep(1)
+        continue
+
+    dist_to_goal = np.linalg.norm(pf_node.pose[:2] - pf_node.goal)
+    if dist_to_goal > 0.7:
+        pf_node.move()
+        dist_to_goal = np.linalg.norm(pf_node.pose[:2] - pf_node.goal)
+        rate.sleep()
+    else:
+        pf_node.stop()

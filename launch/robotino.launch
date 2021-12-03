@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <!-- Launchs a single robot -->
+
 <launch>
    <node name="odom" pkg="coppelia_ros_robotino" type="odometry.py" respawn="true" output="screen" />
-   <node name="frontier_detector" pkg="coppelia_ros_robotino" type="frontier_detector.py" respawn="true" output="screen" />
+   <node name="potential_fields" pkg="coppelia_ros_robotino" type="potential_fields.py" respawn="true" output="screen" />
+   <!-- <node name="frontier_detector" pkg="coppelia_ros_robotino" type="frontier_detector.py" respawn="true" output="screen" /> -->
 
    <arg name="model" default="$(find robotino_description)/urdf/robotino.urdf"/>
    <arg name="gui" default="False" />
@@ -11,9 +13,23 @@
    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-    <!-- Convert PointCloud (published by Hokuyo on CoppeliaSim) to PointCloud2 (used in SLAM)-->       
+    <!-- Convert PointCloud (published by Hokuyo on CoppeliaSim) to PointCloud2 -->
    <node name="point_cloud_converter" pkg="point_cloud_converter" type="point_cloud_converter_node" respawn="true" output="screen">
       <remap from="points_in" to="points1" />
       <remap from="points2_out" to="points2" />
+   </node>
+   
+   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen">
+		<remap from="cloud_in" to="points2" />
+      
+		<param name="angle_min" value="-2.0944" />  <!-- -120*pi/180 -->
+		<param name="angle_max" value="2.0944" />  <!-- 120*pi/180 -->
+		<param name="angle_increment" value="0.00613" />  <!-- 2*pi/1024 -->
+		<param name="time_increment" value="0.000018" />  <!-- (1/50)/81 -->
+		<param name="scan_time" value="0.0333" />
+		<param name="range_min" value="0" />
+		<param name="range_max" value="4.5" />
+		<param name="use_inf" value="false" />
+		<param name="concurrency_level" value="1" />
    </node>
 </launch>
